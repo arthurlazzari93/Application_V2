@@ -259,7 +259,7 @@ const Dashboard = () => {
       <Container fluid className="mt--6">
         {/* Top Row: Global Indicators */}
         <Row className="mb-4">
-          <Col md="4">
+          <Col md="2">
             <Card className="bg-gradient-primary shadow">
               <CardHeader className="bg-transparent">
                 <h6 className="text-uppercase text-light ls-1 mb-1">Faturamento Total</h6>
@@ -269,16 +269,16 @@ const Dashboard = () => {
               </CardHeader>
             </Card>
           </Col>
-          <Col md="4">
-            <Card className="bg-gradient-success shadow">
+          <Col md="2">
+            <Card className="bg-gradient-primary shadow">
               <CardHeader className="bg-transparent">
                 <h6 className="text-uppercase text-light ls-1 mb-1">Total de Vendas</h6>
                 <h2 className="text-white mb-0">{totalSalesGlobal}</h2>
               </CardHeader>
             </Card>
           </Col>
-          <Col md="4">
-            <Card className="bg-gradient-warning shadow">
+          <Col md="2">
+            <Card className="bg-gradient-primary shadow">
               <CardHeader className="bg-transparent">
                 <h6 className="text-uppercase text-light ls-1 mb-1">Ticket Médio</h6>
                 <h2 className="text-white mb-0">
@@ -287,27 +287,33 @@ const Dashboard = () => {
               </CardHeader>
             </Card>
           </Col>
-        </Row>
-        <Row className="mb-4">
-          <Col md="6">
-            <Card className="bg-gradient-info shadow">
+          <Col md="2">
+            <Card className="bg-gradient-primary shadow">
               <CardHeader className="bg-transparent">
                 <h6 className="text-uppercase text-light ls-1 mb-1">Taxa de Recebimento</h6>
                 <h2 className="text-white mb-0">{taxaRecebimento.toFixed(2)}%</h2>
               </CardHeader>
             </Card>
           </Col>
-          <Col md="6">
-            <Card className="bg-gradient-danger shadow">
+          <Col md="2">
+            <Card className="bg-gradient-primary shadow">
               <CardHeader className="bg-transparent">
                 <h6 className="text-uppercase text-light ls-1 mb-1">Dias Médios de Atraso</h6>
                 <h2 className="text-white mb-0">{diasMediosAtraso.toFixed(1)} dias</h2>
               </CardHeader>
             </Card>
           </Col>
-        </Row>
-        <Row>
-          <Col md="6">
+          <Col md="2">
+            <Card className="bg-gradient-primary shadow">
+              <CardHeader className="bg-transparent">
+                <h6 className="text-uppercase text-light ls-1 mb-1">Dias Médios de Atraso</h6>
+                <h2 className="text-white mb-0">{diasMediosAtraso.toFixed(1)} dias</h2>
+              </CardHeader>
+            </Card>
+          </Col>
+          </Row>
+          <Row>
+          <Col xl="6">
             <Card className="shadow">
               <CardHeader>
                 <h3 className="mb-0">Desempenho por Canal de Entrada</h3>
@@ -320,9 +326,9 @@ const Dashboard = () => {
           </Col>
         
         
-        {/* Widget: Faturamento Mensal (fixo: últimos 6 meses, sem filtro) */}
+          {/* Widget: Faturamento Mensal (fixo: últimos 6 meses, sem filtro) */}
         
-          <Col md="6">
+          <Col xl="6">
             <Card className="shadow">
               <CardHeader>
                 <h3 className="mb-0">Faturamento Mensal</h3>

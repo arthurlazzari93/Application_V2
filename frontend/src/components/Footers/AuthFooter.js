@@ -18,7 +18,7 @@ function AuthFooter() {
                   className="font-weight-bold ml-1"
                   target="_blank"
                 >
-                  Tecnogera
+                  Lazzari Seguros
                 </a>
               </div>
             </Col>

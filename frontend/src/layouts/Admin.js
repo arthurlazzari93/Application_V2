@@ -1,9 +1,7 @@
 import React from "react";
 import { useLocation, Route, Routes, Navigate } from "react-router-dom";
-// Importe o ProtectedRoute para envolver suas rotas
 import ProtectedRoute from "components/ProtectedRoute.jsx";
 
-// Core components
 import AdminNavbar from "components/Navbars/AdminNavbar.js";
 import AdminFooter from "components/Footers/AdminFooter.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
@@ -15,28 +13,38 @@ function Admin() {
   const location = useLocation();
   const mainContentRef = React.useRef(null);
 
+  // useEffect para sincronizar as classes do body com o estado do sidebar
+  React.useEffect(() => {
+    if (sidenavOpen) {
+      document.body.classList.add("g-sidenav-pinned");
+      document.body.classList.remove("g-sidenav-hidden");
+    } else {
+      document.body.classList.remove("g-sidenav-pinned");
+      document.body.classList.add("g-sidenav-hidden");
+    }
+  }, [sidenavOpen]);
+
   React.useEffect(() => {
     document.documentElement.scrollTop = 0;
     document.scrollingElement.scrollTop = 0;
-    mainContentRef.current.scrollTop = 0;
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTop = 0;
+    }
   }, [location]);
 
   /**
    * Mapeia as rotas que pertencem ao layout "/admin"
-   * e retorna <Route path="..." element="..." />
    */
   const getRoutes = (allRoutes) => {
     return allRoutes.map((prop, key) => {
-      // Se for um grupo de rotas em "collapse", chama recursivamente
       if (prop.collapse) {
         return getRoutes(prop.views);
       }
-      // Se o layout for "/admin", gera a rota
       if (prop.layout === "/admin") {
         return (
           <Route
-            path={prop.path}          // Ex: "dashboard"
-            element={prop.component}  // Ex: <Dashboard />
+            path={prop.path}
+            element={prop.component}
             key={key}
           />
         );
@@ -46,8 +54,7 @@ function Admin() {
   };
 
   /**
-   * Retorna o título da página atual (usado na navbar), 
-   * caso você queira exibir um texto diferente em cada rota
+   * Retorna o título da página atual para exibição na navbar
    */
   const getBrandText = (path) => {
     for (let i = 0; i < routes.length; i++) {
@@ -58,19 +65,12 @@ function Admin() {
     return "Brand";
   };
 
-  // Alterna entre abrir/fechar sidebar no mobile
+  // Função que apenas alterna o estado; o useEffect cuida das classes no body
   const toggleSidenav = () => {
-    if (document.body.classList.contains("g-sidenav-pinned")) {
-      document.body.classList.remove("g-sidenav-pinned");
-      document.body.classList.add("g-sidenav-hidden");
-    } else {
-      document.body.classList.add("g-sidenav-pinned");
-      document.body.classList.remove("g-sidenav-hidden");
-    }
-    setSidenavOpen(!sidenavOpen);
+    setSidenavOpen((prevState) => !prevState);
   };
 
-  // Altera a cor do Navbar dependendo da rota
+  // Define o tema da navbar com base na rota
   const getNavbarTheme = () => {
     return location.pathname.indexOf("admin/alternative-dashboard") === -1
       ? "dark"
@@ -79,7 +79,6 @@ function Admin() {
 
   return (
     <>
-      {/* Sidebar lateral */}
       <Sidebar
         routes={routes}
         toggleSidenav={toggleSidenav}
@@ -90,7 +89,6 @@ function Admin() {
           imgAlt: "...",
         }}
       />
-      {/* Conteúdo principal */}
       <div className="main-content" ref={mainContentRef}>
         <AdminNavbar
           theme={getNavbarTheme()}
@@ -99,26 +97,18 @@ function Admin() {
           brandText={getBrandText(location.pathname)}
         />
 
-        {/*
-          Envolvemos as rotas de /admin com <ProtectedRoute />.
-          Assim, se o usuário não estiver autenticado, 
-          <ProtectedRoute /> redireciona para /auth/login
-        */}
         <Routes>
-          {/* Tudo dentro deste <Route> será protegido */}
           <Route element={<ProtectedRoute />}>
             {getRoutes(routes)}
-
-            {/* Se não achar nenhuma rota, redireciona para /admin/dashboard */}
             <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
           </Route>
         </Routes>
 
         <AdminFooter />
       </div>
-      {sidenavOpen ? (
+      {sidenavOpen && (
         <div className="backdrop d-xl-none" onClick={toggleSidenav} />
-      ) : null}
+      )}
     </>
   );
 }

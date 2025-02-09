@@ -1,7 +1,7 @@
 // src/views/pages/Login.jsx
 
-import React, { useState } from "react";
-import classnames from "classnames";
+import React, { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Card,
@@ -9,59 +9,68 @@ import {
   FormGroup,
   Form,
   Input,
+  InputGroup,
   InputGroupAddon,
   InputGroupText,
-  InputGroup,
   Container,
   Row,
   Col,
+  Alert,
 } from "reactstrap";
 import axiosInstance from "../../../axiosConfig"; // Ajuste o path conforme a sua estrutura
 import AuthHeader from "components/Headers/AuthHeader.js";
-import { useNavigate } from 'react-router-dom';
 
 function Login() {
-  const [focusedEmail, setFocusedEmail] = useState(false);
-  const [focusedPassword, setFocusedPassword] = useState(false);
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // Hook para navegação
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axiosInstance.post("token/", {
-        username: email, 
-        password: password,
-      });
+  const handleLogin = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-      const { access, refresh } = response.data;
+      if (!email || !password) {
+        setError("Por favor, preencha todos os campos.");
+        return;
+      }
 
-      localStorage.setItem("access_token", access);
-      localStorage.setItem("refresh_token", refresh);
+      setError("");
+      setIsLoading(true);
 
-      navigate("/admin/dashboard"); // Redireciona para a rota protegida
-    } catch (error) {
-      console.error("Erro no login:", error);
-      setError("Credenciais inválidas. Tente novamente.");
-    }
-  };
+      try {
+        const response = await axiosInstance.post("token/", {
+          username: email,
+          password: password,
+        });
+
+        const { access, refresh } = response.data;
+
+        localStorage.setItem("access_token", access);
+        localStorage.setItem("refresh_token", refresh);
+
+        navigate("/admin/dashboard");
+      } catch (err) {
+        console.error("Erro no login:", err);
+        setError("Credenciais inválidas. Tente novamente.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [email, password, navigate]
+  );
 
   return (
     <>
-      <AuthHeader title="Sistema de Inventário" />
+      <AuthHeader title="CommTrack" />
       <Container className="mt--9 pb-5">
         <Row className="justify-content-center">
           <Col lg="5" md="7">
             <Card className="bg-secondary border-0 mb-0">
               <CardBody className="px-lg-5 py-lg-5">
                 <Form role="form" onSubmit={handleLogin}>
-                  <FormGroup
-                    className={classnames("mb-3", {
-                      focused: focusedEmail,
-                    })}
-                  >
+                  <FormGroup className="mb-3">
                     <InputGroup className="input-group-merge input-group-alternative">
                       <InputGroupAddon addonType="prepend">
                         <InputGroupText>
@@ -73,16 +82,10 @@ function Login() {
                         type="text"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        onFocus={() => setFocusedEmail(true)}
-                        onBlur={() => setFocusedEmail(false)}
                       />
                     </InputGroup>
                   </FormGroup>
-                  <FormGroup
-                    className={classnames({
-                      focused: focusedPassword,
-                    })}
-                  >
+                  <FormGroup>
                     <InputGroup className="input-group-merge input-group-alternative">
                       <InputGroupAddon addonType="prepend">
                         <InputGroupText>
@@ -94,8 +97,6 @@ function Login() {
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        onFocus={() => setFocusedPassword(true)}
-                        onBlur={() => setFocusedPassword(false)}
                       />
                     </InputGroup>
                   </FormGroup>
@@ -109,20 +110,29 @@ function Login() {
                       className="custom-control-label"
                       htmlFor="customCheckLogin"
                     >
-                      <span className="text-muted">Remember me</span>
+                      <span className="text-muted">Lembrar de mim</span>
                     </label>
                   </div>
-                  {error && <div className="text-danger mb-3">{error}</div>}
+                  {error && (
+                    <Alert color="danger" className="mt-3">
+                      {error}
+                    </Alert>
+                  )}
                   <div className="text-center">
-                    <Button className="my-4" color="info" type="submit">
-                      Sign in
+                    <Button
+                      className="my-4"
+                      color="info"
+                      type="submit"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Carregando..." : "Entrar"}
                     </Button>
                   </div>
                 </Form>
               </CardBody>
             </Card>
             <Row className="mt-3">
-              {/* Aqui você pode adicionar links para registro, etc., se necessário */}
+              {/* Adicione links para registro, recuperação de senha, etc., se necessário */}
             </Row>
           </Col>
         </Row>
