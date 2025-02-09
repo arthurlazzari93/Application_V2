@@ -1,0 +1,12 @@
+Django==5.1.4
+django-cors-headers
+djangorestframework
+djangorestframework-simplejwt
+mysqlclient
+Pillow
+asgiref==3.8.1
+PyJWT==2.10.0
+python-decouple==3.8
+sqlparse==0.5.1
+tzdata==2024.2
+gunicorn
