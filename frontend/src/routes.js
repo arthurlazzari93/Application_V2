@@ -18,7 +18,7 @@ import Alternative from "views/pages/dashboards/Alternative.js";
 import Buttons from "views/pages/components/Buttons.js";
 import Calendar from "views/pages/Calendar.js";
 import Cards from "views/pages/components/Cards.js";
-/*import Charts from "views/pages/Charts.js";*/
+import Charts from "views/pages/Charts.js";
 import Components from "views/pages/forms/Components.js";
 import Dashboard from "views/pages/dashboards/Dashboard.js";
 import Elements from "views/pages/forms/Elements.js";
@@ -47,7 +47,8 @@ import Consultores from "views/pages/cadastros/ConsultoresList";
 import Planos from "views/pages/cadastros/PlanosList";
 import Vendas from "views/pages/cadastros/VendasList";
 import ControleRecebimentoPanel from "views/pages/gestao_de_vendas/ControleRecebimentoPanel";
-import Charts from "views/pages/dashboards/Charts.js";
+import Indicadores from "views/pages/dashboards/Indicadores.js";
+import IndicadoresV2 from "views/pages/dashboards/Indicadoresv2";
 
 const routes = [
   {
@@ -57,10 +58,18 @@ const routes = [
     state: "dashboardsCollapse",
     views: [
       {
-        path: "/charts",
+        path: "/indicadores",
         name: "Dashboard Lazzari",
         miniName: "DL",
-        component: <Charts />,
+        component: <Indicadores />,
+        layout: "/admin",
+        protected: true,
+      },
+      {
+        path: "/indicadoresV2",
+        name: "Indicadores",
+        miniName: "DL",
+        component: <IndicadoresV2 />,
         layout: "/admin",
         protected: true,
       },
@@ -85,7 +94,7 @@ const routes = [
 
   {
     collapse: true,
-    name: "GESTÃO DE COMISSÕES",
+    name: "COMISSIONAMENTO",
     icon: "ni ni-diamond text-primary",
     state: "gestaodecomissoesCollapse",
     views: [
