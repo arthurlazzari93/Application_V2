@@ -365,122 +365,6 @@ const IndicadoresV2 = () => {
 
 
 
-// --- Widget: Vendas e Faturamento - Últimos 12 Meses ---
-
-// Gera um array com os últimos 12 meses (no formato "YYYY-MM")
-const generateLast12Months = () => {
-  const months = [];
-  const now = new Date();
-  // Inicia 11 meses atrás até o mês atual
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-    months.push(key);
-  }
-  return months;
-};
-
-const last12Months = generateLast12Months();
-
-// Filtra as vendas para o período fixo de 12 meses
-// (Nota: usamos as datas geradas para last12Months para garantir que mesmo meses sem vendas apareçam)
-const vendasAnuais = filtrarPorPeriodo(vendas, last12Months[0] + "-01", defaultGlobalEnd);
-
-// Agrupa as vendas por mês
-const vendasPorMes = {};
-vendasAnuais.forEach(venda => {
-  const saleDate = new Date(venda.data_venda);
-  const monthKey = saleDate.getFullYear() + '-' + String(saleDate.getMonth() + 1).padStart(2, '0');
-  if (!vendasPorMes[monthKey]) {
-    vendasPorMes[monthKey] = { count: 0, revenue: 0 };
-  }
-  vendasPorMes[monthKey].count += 1;
-  vendasPorMes[monthKey].revenue += calcularValorTotalPlano(venda);
-});
-
-// Cria os arrays para os rótulos, contagem de vendas e faturamento total
-const lineLabels = last12Months.map(key => {
-  const [year, month] = key.split('-');
-  const date = new Date(year, parseInt(month, 10) - 1, 1);
-  return date.toLocaleString('default', { month: 'short', year: 'numeric' });
-});
-const salesCounts = last12Months.map(key => vendasPorMes[key] ? vendasPorMes[key].count : 0);
-const salesRevenue = last12Months.map(key => vendasPorMes[key] ? vendasPorMes[key].revenue : 0);
-
-// Prepara os dados para o gráfico de linha com duas linhas (dual-axis)
-const lineChartData = {
-  labels: lineLabels,
-  datasets: [
-    {
-      label: "Número de Vendas",
-      data: salesCounts,
-      borderColor: "rgba(75,192,192,1)",
-      backgroundColor: "rgba(75,192,192,0.2)",
-      fill: false,
-      tension: 0.3,
-    },
-    {
-      label: "Faturamento Total",
-      data: salesRevenue,
-      borderColor: "rgba(255,99,132,1)",
-      backgroundColor: "rgba(255,99,132,0.2)",
-      fill: false,
-      tension: 0.3,
-      yAxisID: 'y-revenue',
-    },
-  ],
-};
-
-// Define as opções para o gráfico com dual-axis
-const lineChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { position: 'top' },
-    title: {
-      display: true,
-      text: "Vendas e Faturamento - Últimos 12 Meses",
-      font: { size: 18 },
-    },
-    tooltip: {
-      callbacks: {
-        label: (context) => {
-          if (context.dataset.label === "Faturamento Total") {
-            return context.dataset.label + ": " +
-              context.parsed.y.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-          } else {
-            return context.dataset.label + ": " + context.parsed.y;
-          }
-        },
-      },
-    },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-      title: {
-        display: true,
-        text: "Número de Vendas",
-        font: { size: 14 },
-      },
-    },
-    'y-revenue': {
-      type: 'linear',
-      position: 'right',
-      beginAtZero: true,
-      grid: { drawOnChartArea: false },
-      title: {
-        display: true,
-        text: "Faturamento (R$)",
-        font: { size: 14 },
-      },
-      ticks: {
-        callback: (value) =>
-          value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-      },
-    },
-  },
-};
 
 
 
@@ -701,8 +585,6 @@ const lineChartOptions = {
             <Bar data={effortChartData} options={effortChartOptions} />
           </CardBody>
         </Card>
-
-        
 
 
 
