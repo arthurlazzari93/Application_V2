@@ -161,11 +161,6 @@ const IndicadoresV2 = () => {
   const canalLabels = Object.keys(desempenhoCanal);
   const canalCountData = canalLabels.map(label => desempenhoCanal[label].count);
 
-
-
-
-
-
   // ----- Widget: Faturamento Mensal (FIXO – últimos 6 meses) -----
   const vendasanual = filtrarPorPeriodo(vendas, defaultGlobalStart, defaultGlobalEnd);
   const revenueByMonthanual = {};
@@ -221,13 +216,7 @@ const IndicadoresV2 = () => {
       },
     ],
   };
-
-
-
-
-
   // --- Indicador: Crescimento Mensal / Variação Percentual ---
-
 
   // Calcula o faturamento total de cada mês para o indicador de crescimento
 
@@ -267,15 +256,6 @@ const IndicadoresV2 = () => {
       },
     ],
   };
-
-
-
-
-
-
-
-
-
 
   // --- Widget: Performance por Operadora (com limite de 20) ---
   // --- Widget: Índice de Esforço por Operadora ---
@@ -373,6 +353,168 @@ const IndicadoresV2 = () => {
 
 
 
+
+
+
+  /********************************************
+ * GRÁFICO DE LINHA (12 MESES)
+ * Exibindo a quantidade de vendas e o valor total das vendas.
+ ********************************************/
+  // 1) Definir a data atual e um objeto monthlyData para os últimos 12 meses
+  const hoje = new Date();
+  const anoAtual = hoje.getFullYear();
+  const mesAtual = hoje.getMonth();
+
+  // Objeto que guarda, para cada "YYYY-MM", { count: 0, totalValue: 0 }
+  const monthlyData12 = {};
+
+  // Inicializa com 12 meses, do mais antigo ao mais recente
+  for (let i = 11; i >= 0; i--) {
+    const tempDate = new Date(anoAtual, mesAtual - i, 1);
+    const key = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0');
+    monthlyData12[key] = { count: 0, totalValue: 0 };
+  }
+
+  // 2) Popula monthlyData12 com base em vendas (você pode trocar o valor do plano para subtrair desconto se quiser)
+  vendas.forEach((venda) => {
+    const dataVenda = new Date(venda.data_venda);
+    // Monta a chave "YYYY-MM" da venda
+    const key = dataVenda.getFullYear() + '-' + String(dataVenda.getMonth() + 1).padStart(2, '0');
+
+    if (monthlyData12[key]) {
+      // Se não quiser subtrair o desconto do consultor, use parseFloat(venda.valor_plano).
+      // Se quiser subtrair, use parseFloat(venda.valor_plano) - parseFloat(venda.desconto_consultor).
+      monthlyData12[key].totalValue += parseFloat(venda.valor_plano);
+
+      // Incrementa a contagem de vendas
+      monthlyData12[key].count += 1;
+    }
+  });
+
+  // 3) Ordena as chaves cronologicamente
+  const sortedKeys12 = Object.keys(monthlyData12).sort();
+  // Ex.: ["2022-11", "2022-12", "2023-01", ... , "2023-10"]
+
+  // 4) Gera arrays de rótulos e dados para as duas linhas
+  const line12Labels = sortedKeys12.map(key => {
+    const [year, month] = key.split('-');
+    const date = new Date(+year, +month - 1, 1);
+    return date.toLocaleString('default', { month: 'short', year: 'numeric' });
+  });
+
+  const salesCountData12 = sortedKeys12.map(key => monthlyData12[key].count);
+  const totalValueData12 = sortedKeys12.map(key => monthlyData12[key].totalValue);
+
+
+
+  // Cria o objeto de dados: duas linhas (quantidade e valor total)
+  const line12ChartData = {
+    labels: line12Labels,
+    datasets: [
+      {
+        label: "Quantidade de Vendas",
+        data: salesCountData12,
+        borderColor: "rgba(75,192,192,1)",
+        backgroundColor: "rgba(75,192,192,0.2)",
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        pointBackgroundColor: "rgba(75,192,192,1)",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        yAxisID: "y-axis-count", // Referencia no array yAxes
+      },
+      {
+        label: "Valor Total de Vendas",
+        data: totalValueData12,
+        borderColor: "rgba(255,99,132,1)",
+        backgroundColor: "rgba(255,99,132,0.2)",
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        pointBackgroundColor: "rgba(255,99,132,1)",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        yAxisID: "y-axis-value", // Referencia no array yAxes
+      },
+    ],
+  };
+
+  // Opções para Chart.js 2.x: xAxes e yAxes como arrays
+  const line12ChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' },
+      title: {
+        display: true,
+        text: "Quantidade x Valor de Vendas (últimos 12 meses)",
+        fontSize: 18, // Em Chart.js 2.x, é fontSize e não font: {size: ...}
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            // datasetIndex 0 => quantidade; datasetIndex 1 => valor
+            if (context.datasetIndex === 0) {
+              // Quantidade
+              return context.dataset.label + ": " + context.value;
+            } else {
+              // Valor
+              const val = Number(context.value) || 0;
+              return context.dataset.label + ": " +
+                val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            }
+          },
+        },
+      },
+    },
+    scales: {
+      xAxes: [
+        {
+          display: true,
+          ticks: {
+            fontSize: 12,
+          },
+          gridLines: { display: false },
+        },
+      ],
+      yAxes: [
+        {
+          id: "y-axis-count",
+          type: "linear",
+          position: "left",
+          ticks: {
+            beginAtZero: true,
+            fontSize: 12,
+          },
+          scaleLabel: {
+            display: true,
+            labelString: "Quantidade de Vendas",
+            fontSize: 14,
+          },
+        },
+        {
+          id: "y-axis-value",
+          type: "linear",
+          position: "right",
+          gridLines: {
+            drawOnChartArea: false,
+          },
+          ticks: {
+            fontSize: 12,
+            callback: function (value) {
+              return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            },
+          },
+          scaleLabel: {
+            display: true,
+            labelString: "Valor (R$)",
+            fontSize: 14,
+          },
+        },
+      ],
+    },
+  };
 
 
   return (
@@ -577,14 +719,40 @@ const IndicadoresV2 = () => {
           </Col>
         </Row>
 
-        <Card className="shadow mb-4">
-          <CardHeader>
-            <h3 className="mb-0">Índice de Esforço por Operadora</h3>
-          </CardHeader>
-          <CardBody>
-            <Bar data={effortChartData} options={effortChartOptions} />
-          </CardBody>
-        </Card>
+
+        <Row className="mb-4">
+  <Col xl="12">
+    <Card className="shadow" style={{ minHeight: "250px" }}>
+      <CardHeader style={{ padding: "0.5rem" }}>
+        <h3 className="mb-0">Índice de Esforço por Operadora</h3>
+      </CardHeader>
+      <CardBody style={{ height: "300px", padding: "0.5rem" }}>
+        <Bar
+          data={effortChartData}
+          options={{
+            ...effortChartOptions,
+            maintainAspectRatio: false, // IMPORTANTE para desabilitar a proporção fixa
+          }}
+        />
+      </CardBody>
+    </Card>
+  </Col>
+</Row>
+
+
+
+        <Row className="mb-4">
+          <Col xl="12">
+            <Card className="shadow">
+              <CardHeader>
+                <h3 className="mb-0">Vendas (Qtd. x Valor) - Últimos 12 Meses</h3>
+              </CardHeader>
+              <CardBody style={{ height: '400px' }}>
+                <Line data={line12ChartData} options={line12ChartOptions} />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
 
 
 
