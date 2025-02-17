@@ -19,6 +19,9 @@ import {
 } from 'reactstrap';
 import Header from 'components/Headers/SimpleHeader';
 
+// Import da biblioteca de alertas, por exemplo:
+import ReactBSAlert from "react-bootstrap-sweetalert"; // Ajuste conforme seu setup
+
 const ConsultoresList = () => {
   const [consultores, setConsultores] = useState([]);
   const [selectedConsultor, setSelectedConsultor] = useState(null);  // Consultor selecionado para edição
@@ -30,6 +33,27 @@ const ConsultoresList = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Estado para exibir o alerta de sucesso
+  const [alert, setAlert] = useState(null);
+
+  // Função responsável por exibir o alerta de sucesso
+  const successAlert = () => {
+    setAlert(
+      <ReactBSAlert
+        success
+        style={{ display: "block", marginTop: "-100px" }}
+        title="Success"
+        onConfirm={() => setAlert(null)}
+        onCancel={() => setAlert(null)}
+        confirmBtnBsStyle="success"
+        confirmBtnText="Ok"
+        btnSize=""
+      >
+        Cadastro realizado com sucesso!
+      </ReactBSAlert>
+    );
+  };
 
   useEffect(() => {
     // Função para buscar consultores
@@ -57,13 +81,24 @@ const ConsultoresList = () => {
       if (selectedConsultor) {
         // Atualizar consultor existente
         await api.put(`api/consultor/${selectedConsultor.id}/`, selectedConsultor);
-        setConsultores(consultores.map(consultor => consultor.id === selectedConsultor.id ? selectedConsultor : consultor));
+        setConsultores(
+          consultores.map(consultor =>
+            consultor.id === selectedConsultor.id ? selectedConsultor : consultor
+          )
+        );
         setSelectedConsultor(null);  // Limpa o formulário
+
+        // Exibe o alerta de sucesso
+        successAlert();
+
       } else {
         // Adicionar novo consultor
         const response = await api.post('api/consultor/', newConsultor);
         setConsultores([...consultores, response.data]);
         setNewConsultor({ nome: '', telefone: '', email: '' });  // Limpa o formulário
+
+        // Exibe o alerta de sucesso
+        successAlert();
       }
       setError(null);
     } catch (err) {
@@ -83,7 +118,9 @@ const ConsultoresList = () => {
     if (selectedConsultor) {
       try {
         await api.delete(`api/consultor/${selectedConsultor.id}/`);
-        setConsultores(consultores.filter(consultor => consultor.id !== selectedConsultor.id));
+        setConsultores(
+          consultores.filter(consultor => consultor.id !== selectedConsultor.id)
+        );
         setSelectedConsultor(null);  // Limpa o formulário
         setError(null);
       } catch (err) {
@@ -128,6 +165,9 @@ const ConsultoresList = () => {
   return (
     <>
       <Header />
+      {/* Renderiza o alerta de sucesso, se existir */}
+      {alert}
+
       <Container className="mt--8" fluid>
         {error && (
           <Row>
@@ -155,18 +195,18 @@ const ConsultoresList = () => {
                 <tbody>
                   {consultores.length > 0 ? (
                     consultores.map((consultor) => (
-                      <tr 
-                        key={consultor.id} 
+                      <tr
+                        key={consultor.id}
                         onClick={() => handleSelectConsultor(consultor)}
                         style={{ cursor: 'pointer' }}
                       >
                         <td>
-                          <Button 
-                            color="info" 
-                            onClick={(e) => { 
-                              e.stopPropagation(); 
-                              handleSelectConsultor(consultor); 
-                            }} 
+                          <Button
+                            color="info"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSelectConsultor(consultor);
+                            }}
                             size="sm"
                           >
                             Modificar
@@ -219,7 +259,7 @@ const ConsultoresList = () => {
                   <FormGroup>
                     <Label className="form-control-label">Telefone</Label>
                     <Input
-                      type="text" // Alterado para 'text' para permitir caracteres como parênteses e hífens
+                      type="text" // Campo como texto para permitir parênteses ou hífens
                       name="telefone"
                       id="telefone"
                       value={selectedConsultor ? selectedConsultor.telefone : newConsultor.telefone}
@@ -231,7 +271,7 @@ const ConsultoresList = () => {
                   <FormGroup>
                     <Label className="form-control-label">E-mail</Label>
                     <Input
-                      type="email" // Alterado para 'email' para validação automática
+                      type="email"
                       name="email"
                       id="email"
                       value={selectedConsultor ? selectedConsultor.email : newConsultor.email}
@@ -244,9 +284,9 @@ const ConsultoresList = () => {
                     {selectedConsultor ? 'Modificar' : 'Cadastrar'}
                   </Button>
                   {selectedConsultor && (
-                    <Button 
-                      color="danger" 
-                      onClick={handleDeleteConsultor} 
+                    <Button
+                      color="danger"
+                      onClick={handleDeleteConsultor}
                       className="ml-2"
                     >
                       Deletar

@@ -721,23 +721,23 @@ const IndicadoresV2 = () => {
 
 
         <Row className="mb-4">
-  <Col xl="12">
-    <Card className="shadow" style={{ minHeight: "250px" }}>
-      <CardHeader style={{ padding: "0.5rem" }}>
-        <h3 className="mb-0">Índice de Esforço por Operadora</h3>
-      </CardHeader>
-      <CardBody style={{ height: "300px", padding: "0.5rem" }}>
-        <Bar
-          data={effortChartData}
-          options={{
-            ...effortChartOptions,
-            maintainAspectRatio: false, // IMPORTANTE para desabilitar a proporção fixa
-          }}
-        />
-      </CardBody>
-    </Card>
-  </Col>
-</Row>
+          <Col xl="12">
+            <Card className="shadow" style={{ minHeight: "250px" }}>
+              <CardHeader style={{ padding: "0.5rem" }}>
+                <h3 className="mb-0">Índice de Esforço por Operadora</h3>
+              </CardHeader>
+              <CardBody style={{ height: "300px", padding: "0.5rem" }}>
+                <Bar
+                  data={effortChartData}
+                  options={{
+                    ...effortChartOptions,
+                    maintainAspectRatio: false, // IMPORTANTE para desabilitar a proporção fixa
+                  }}
+                />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
 
 
 
