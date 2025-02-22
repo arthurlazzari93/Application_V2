@@ -272,7 +272,7 @@ function Elements() {
                       </Label>
                       <Col md="10">
                         <Input
-                          defaultValue="John Snow"
+                          defaultValue="Lazzari Seguros"
                           id="example-text-input"
                           type="text"
                         />

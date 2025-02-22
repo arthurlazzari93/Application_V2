@@ -320,7 +320,7 @@ const VendasList = () => {
             <Row>
                 <Col md="4">
                   <FormGroup>
-                    <Label for="cliente_nome">Nome do Cliente</Label>
+                    <Label for="cliente_nome" style={{ fontSize: '0.9rem' }}>Nome do Cliente</Label>
                     <Input
                       type="text"
                       name="cliente_nome"
@@ -335,7 +335,7 @@ const VendasList = () => {
                 </Col>
                 <Col md="2">
                   <FormGroup>
-                    <Label for="cliente_documento">CPF/CNPJ</Label>
+                    <Label for="cliente_documento" style={{ fontSize: '0.9rem' }}>CPF/CNPJ</Label>
                     <Input
                       type="text"
                       name="cliente_documento"
@@ -350,7 +350,7 @@ const VendasList = () => {
                 </Col>
                 <Col md="3">
                   <FormGroup>
-                    <Label for="cliente_email">E-mail</Label>
+                    <Label for="cliente_email" style={{ fontSize: '0.9rem' }}>E-mail</Label>
                     <Input
                       type="email"
                       name="cliente_email"
@@ -364,7 +364,7 @@ const VendasList = () => {
                 </Col>
                 <Col md="1">
                   <FormGroup>
-                    <Label for="cliente_telefone">Telefone</Label>
+                    <Label for="cliente_telefone" style={{ fontSize: '0.9rem' }}>Telefone</Label>
                     <Input
                       type="text"
                       name="cliente_telefone"
@@ -378,7 +378,7 @@ const VendasList = () => {
                 </Col>
                 <Col md="2">
                   <FormGroup>
-                    <Label for="canal_entrada">Canal de Entrada</Label>
+                    <Label for="canal_entrada" style={{ fontSize: '0.9rem' }}>Canal de Entrada</Label>
                     <Input
                     type="select"
                     name="canal_entrada"
@@ -400,7 +400,7 @@ const VendasList = () => {
             <Row>
                 <Col md="3">
                   <FormGroup>
-                    <Label for="plano_id">Plano</Label>
+                    <Label for="plano_id" style={{ fontSize: '0.9rem' }}>Plano</Label>
                     <Input
                       type="select"
                       name="plano_id"
@@ -421,7 +421,7 @@ const VendasList = () => {
                 </Col>
                 <Col md="2">
                   <FormGroup>
-                    <Label for="consultor_id">Consultor</Label>
+                    <Label for="consultor_id" style={{ fontSize: '0.9rem' }}>Consultor</Label>
                     <Input
                       type="select"
                       name="consultor_id"
@@ -442,7 +442,7 @@ const VendasList = () => {
                 </Col>
                 <Col md="2">
                   <FormGroup>
-                    <Label for="numero_proposta">Nº da Proposta</Label>
+                    <Label for="numero_proposta" style={{ fontSize: '0.9rem' }}>Nº da Proposta</Label>
                     <Input
                       type="text"
                       name="numero_proposta"
@@ -457,7 +457,7 @@ const VendasList = () => {
                 </Col>
                 <Col md="1">
                   <FormGroup>
-                    <Label for="valor_plano">Valor do Plano</Label>
+                    <Label for="valor_plano" style={{ fontSize: '0.9rem' }}>Valor do Plano</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -473,7 +473,7 @@ const VendasList = () => {
                 </Col>
                 <Col md="1">
                   <FormGroup>
-                    <Label for="desconto_consultor">Desconto</Label>
+                    <Label for="desconto_consultor" style={{ fontSize: '0.9rem' }}>Desconto</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -488,7 +488,7 @@ const VendasList = () => {
                 </Col>
                 <Col md="1">
                   <FormGroup>
-                    <Label for="data_venda">Data Venda</Label>
+                    <Label for="data_venda" style={{ fontSize: '0.9rem' }}>Data Venda</Label>
                     <Input
                       type="date"
                       name="data_venda"
@@ -502,7 +502,7 @@ const VendasList = () => {
                 </Col>
                 <Col md="1">
                   <FormGroup>
-                    <Label for="data_vigencia">Data Vigência</Label>
+                    <Label for="data_vigencia" style={{ fontSize: '0.9rem' }}>Data Vigência</Label>
                     <Input
                       type="date"
                       name="data_vigencia"
@@ -516,7 +516,7 @@ const VendasList = () => {
                 </Col>
                 <Col md="1">
                   <FormGroup>
-                    <Label for="data_vencimento">Data Venc.</Label>
+                    <Label for="data_vencimento" style={{ fontSize: '0.9rem' }}>Data Venc.</Label>
                     <Input
                       type="date"
                       name="data_vencimento"

@@ -165,7 +165,7 @@ function AdminNavbar({ theme, sidenavOpen, toggleSidenav }) {
                         <div className="col ml--2">
                           <div className="d-flex justify-content-between align-items-center">
                             <div>
-                              <h4 className="mb-0 text-sm">John Snow</h4>
+                              <h4 className="mb-0 text-sm">Lazzari Seguros</h4>
                             </div>
                             <div className="text-right text-muted">
                               <small>2 hrs ago</small>
@@ -215,7 +215,7 @@ function AdminNavbar({ theme, sidenavOpen, toggleSidenav }) {
                     </span>
                     <Media className="ml-2 d-none d-lg-block">
                       <span className="mb-0 text-sm font-weight-bold">
-                        John Snow
+                        Lazzari Seguros
                       </span>
                     </Media>
                   </Media>
