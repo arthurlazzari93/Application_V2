@@ -1,4 +1,4 @@
-// src/views/dashboards/IndicadoresV2.js
+// src/views/dashboards/Indicadores.js
 
 import React, { useState, useEffect } from 'react';
 import api from '../../../axiosConfig';
@@ -11,7 +11,6 @@ import {
   CardBody,
   FormGroup,
   Input,
-  CardTitle,
 
 } from 'reactstrap';
 import { Bar, Line, Pie } from 'react-chartjs-2';
@@ -26,7 +25,7 @@ const filtrarPorPeriodo = (array, start, end, field = 'data_venda') => {
   });
 };
 
-const IndicadoresV2 = () => {
+const Indicadores = () => {
   // Período padrão anual (fixo) para widgets que não possuem filtro editável (ex.: Faturamento Mensal)
   const now = new Date();
   const anualStartDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
@@ -162,11 +161,6 @@ const IndicadoresV2 = () => {
   const canalLabels = Object.keys(desempenhoCanal);
   const canalCountData = canalLabels.map(label => desempenhoCanal[label].count);
 
-
-
-
-
-
   // ----- Widget: Faturamento Mensal (FIXO – últimos 6 meses) -----
   const vendasanual = filtrarPorPeriodo(vendas, defaultGlobalStart, defaultGlobalEnd);
   const revenueByMonthanual = {};
@@ -222,13 +216,7 @@ const IndicadoresV2 = () => {
       },
     ],
   };
-
-
-
-
-
   // --- Indicador: Crescimento Mensal / Variação Percentual ---
-
 
   // Calcula o faturamento total de cada mês para o indicador de crescimento
 
@@ -268,15 +256,6 @@ const IndicadoresV2 = () => {
       },
     ],
   };
-
-
-
-
-
-
-
-
-
 
   // --- Widget: Performance por Operadora (com limite de 20) ---
   // --- Widget: Índice de Esforço por Operadora ---
@@ -368,122 +347,174 @@ const IndicadoresV2 = () => {
 
 
 
-  // Cálculo do Total de Vendas para o mês vigente e do mês anterior
 
+
+
+
+
+
+
+
+
+  /********************************************
+ * GRÁFICO DE LINHA (12 MESES)
+ * Exibindo a quantidade de vendas e o valor total das vendas.
+ ********************************************/
+  // 1) Definir a data atual e um objeto monthlyData para os últimos 12 meses
   const hoje = new Date();
   const anoAtual = hoje.getFullYear();
   const mesAtual = hoje.getMonth();
 
-  // Vendas do mês vigente (utilizando o campo data_venda)
-  const vendasMesAtual = vendas.filter(venda => {
+  // Objeto que guarda, para cada "YYYY-MM", { count: 0, totalValue: 0 }
+  const monthlyData12 = {};
+
+  // Inicializa com 12 meses, do mais antigo ao mais recente
+  for (let i = 11; i >= 0; i--) {
+    const tempDate = new Date(anoAtual, mesAtual - i, 1);
+    const key = tempDate.getFullYear() + '-' + String(tempDate.getMonth() + 1).padStart(2, '0');
+    monthlyData12[key] = { count: 0, totalValue: 0 };
+  }
+
+  // 2) Popula monthlyData12 com base em vendas (você pode trocar o valor do plano para subtrair desconto se quiser)
+  vendas.forEach((venda) => {
     const dataVenda = new Date(venda.data_venda);
-    return dataVenda.getFullYear() === anoAtual && dataVenda.getMonth() === mesAtual;
+    // Monta a chave "YYYY-MM" da venda
+    const key = dataVenda.getFullYear() + '-' + String(dataVenda.getMonth() + 1).padStart(2, '0');
+
+    if (monthlyData12[key]) {
+      // Se não quiser subtrair o desconto do consultor, use parseFloat(venda.valor_plano).
+      // Se quiser subtrair, use parseFloat(venda.valor_plano) - parseFloat(venda.desconto_consultor).
+      monthlyData12[key].totalValue += parseFloat(venda.valor_plano);
+
+      // Incrementa a contagem de vendas
+      monthlyData12[key].count += 1;
+    }
   });
 
-  // Total do mês vigente (valor do plano menos desconto do consultor)
-  const totalVendasMesAtual = vendasMesAtual.reduce(
-    (acc, venda) => acc + (parseFloat(venda.valor_plano) - parseFloat(venda.desconto_consultor)),
-    0
-  );
+  // 3) Ordena as chaves cronologicamente
+  const sortedKeys12 = Object.keys(monthlyData12).sort();
+  // Ex.: ["2022-11", "2022-12", "2023-01", ... , "2023-10"]
 
-  // Para o mês anterior (ajusta para o caso de janeiro)
-  const dataMesAnterior = new Date(anoAtual, mesAtual - 1, 1);
-  const vendasMesAnterior = vendas.filter(venda => {
-    const dataVenda = new Date(venda.data_venda);
-    return dataVenda.getFullYear() === dataMesAnterior.getFullYear() &&
-      dataVenda.getMonth() === dataMesAnterior.getMonth();
+  // 4) Gera arrays de rótulos e dados para as duas linhas
+  const line12Labels = sortedKeys12.map(key => {
+    const [year, month] = key.split('-');
+    const date = new Date(+year, +month - 1, 1);
+    return date.toLocaleString('default', { month: 'short', year: 'numeric' });
   });
-  const totalVendasMesAnterior = vendasMesAnterior.reduce(
-    (acc, venda) => acc + (parseFloat(venda.valor_plano) - parseFloat(venda.desconto_consultor)),
-    0
-  );
 
-  // Cálculo da variação percentual entre os meses
-  const variacaoPercentual =
-    totalVendasMesAnterior !== 0
-      ? ((totalVendasMesAtual - totalVendasMesAnterior) / totalVendasMesAnterior) * 100
-      : 0;
+  const salesCountData12 = sortedKeys12.map(key => monthlyData12[key].count);
+  const totalValueData12 = sortedKeys12.map(key => monthlyData12[key].totalValue);
 
 
 
+  // Cria o objeto de dados: duas linhas (quantidade e valor total)
+  const line12ChartData = {
+    labels: line12Labels,
+    datasets: [
+      {
+        label: "Quantidade de Vendas",
+        data: salesCountData12,
+        borderColor: "rgba(75,192,192,1)",
+        backgroundColor: "rgba(75,192,192,0.2)",
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        pointBackgroundColor: "rgba(75,192,192,1)",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        yAxisID: "y-axis-count", // Referencia no array yAxes
+      },
+      {
+        label: "Valor Total de Vendas",
+        data: totalValueData12,
+        borderColor: "rgba(255,99,132,1)",
+        backgroundColor: "rgba(255,99,132,0.2)",
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        pointBackgroundColor: "rgba(255,99,132,1)",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        yAxisID: "y-axis-value", // Referencia no array yAxes
+      },
+    ],
+  };
 
-
-  // Cálculo da Quantidade de Vendas para o mês vigente e do mês anterior
-
-
-
-  // Vendas do mês vigente: filtra as vendas cujo campo data_venda esteja no mês e ano atuais
-
-  const totalVendasCountMesAtual = vendasMesAtual.length;
-
-  // Para o mês anterior (trata corretamente o caso de janeiro)
-
-
-  const totalVendasCountMesAnterior = vendasMesAnterior.length;
-
-  // Cálculo da variação percentual da quantidade de vendas
-  const variacaoPercentualCount =
-    totalVendasCountMesAnterior !== 0
-      ? ((totalVendasCountMesAtual - totalVendasCountMesAnterior) / totalVendasCountMesAnterior) * 100
-      : 0;
-
-
-
-
-
-  // Cálculo do Ticket Médio para o mês vigente e o mês anterior
-
-  // Filtra as vendas do mês vigente (mesmo que usamos vendasMesAtual anteriormente)
-
-  const totalValorMesAtual = vendasMesAtual.reduce(
-    (acc, venda) => acc + (parseFloat(venda.valor_plano) - parseFloat(venda.desconto_consultor)),
-    0
-  );
-  const ticketMesAtual = vendasMesAtual.length > 0 ? totalValorMesAtual / vendasMesAtual.length : 0;
-
-  // Filtra as vendas do mês anterior
-
-  const totalValorMesAnterior = vendasMesAnterior.reduce(
-    (acc, venda) => acc + (parseFloat(venda.valor_plano) - parseFloat(venda.desconto_consultor)),
-    0
-  );
-  const ticketMesAnterior = vendasMesAnterior.length > 0 ? totalValorMesAnterior / vendasMesAnterior.length : 0;
-
-  // Calcula a variação percentual do Ticket Médio
-  const variacaoTicket = ticketMesAnterior !== 0
-    ? ((ticketMesAtual - ticketMesAnterior) / ticketMesAnterior) * 100
-    : 0;
-
-
-
-
-
-
-
-  // --- Cálculos para o widget de Meta de Vendas Restante ---
-
-  // Data atual e informações sobre o mês vigente
-
-
-  // Filtra as vendas do mês vigente
-
-
-  // Filtra as vendas do mês anterior (cuida do caso de janeiro)
-
-
-  // Calcula a diferença (quanto falta para atingir o faturamento do mês anterior)
-  const diferenca = totalVendasMesAnterior - totalVendasMesAtual;
-
-  // Calcula quantos dias faltam até o final do mês vigente
-  const fimDoMes = new Date(anoAtual, mesAtual + 1, 0); // último dia do mês atual
-  const diasRestantes = fimDoMes.getDate() - hoje.getDate() + 1;
-
-  // Calcula a meta diária (apenas se houver diferença positiva)
-  const metaDiaria = diferenca > 0 ? diferenca / diasRestantes : 0;
-
-
-
-
+  // Opções para Chart.js 2.x: xAxes e yAxes como arrays
+  const line12ChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top' },
+      title: {
+        display: true,
+        text: "Quantidade x Valor de Vendas (últimos 12 meses)",
+        fontSize: 18, // Em Chart.js 2.x, é fontSize e não font: {size: ...}
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            // datasetIndex 0 => quantidade; datasetIndex 1 => valor
+            if (context.datasetIndex === 0) {
+              // Quantidade
+              return context.dataset.label + ": " + context.value;
+            } else {
+              // Valor
+              const val = Number(context.value) || 0;
+              return context.dataset.label + ": " +
+                val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            }
+          },
+        },
+      },
+    },
+    scales: {
+      xAxes: [
+        {
+          display: true,
+          ticks: {
+            fontSize: 12,
+          },
+          gridLines: { display: false },
+        },
+      ],
+      yAxes: [
+        {
+          id: "y-axis-count",
+          type: "linear",
+          position: "left",
+          ticks: {
+            beginAtZero: true,
+            fontSize: 12,
+          },
+          scaleLabel: {
+            display: true,
+            labelString: "Quantidade de Vendas",
+            fontSize: 14,
+          },
+        },
+        {
+          id: "y-axis-value",
+          type: "linear",
+          position: "right",
+          gridLines: {
+            drawOnChartArea: false,
+          },
+          ticks: {
+            fontSize: 12,
+            callback: function (value) {
+              return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            },
+          },
+          scaleLabel: {
+            display: true,
+            labelString: "Valor (R$)",
+            fontSize: 14,
+          },
+        },
+      ],
+    },
+  };
 
 
   return (
@@ -688,210 +719,41 @@ const IndicadoresV2 = () => {
           </Col>
         </Row>
 
-        <Card className="shadow mb-4">
-          <CardHeader>
-            <h3 className="mb-0">Índice de Esforço por Operadora</h3>
-          </CardHeader>
-          <CardBody>
-            <Bar data={effortChartData} options={effortChartOptions} />
-          </CardBody>
-        </Card>
 
-        <Row>
-          <Col md="6" xl="3">
-            <Card className="bg-gradient-default">
-              <CardBody>
-                <Row>
-                  <div className="col">
-                    <CardTitle className="text-uppercase text-muted mb-0 text-white">
-                      Vendas Realizadas
-                    </CardTitle>
-                    <span className="h2 font-weight-bold mb-0 text-white">
-                      {totalVendasMesAtual.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                    </span>
-                  </div>
-                  <Col className="col-auto">
-                    <div className="icon icon-shape bg-white text-dark rounded-circle shadow">
-                      <i className="ni ni-active-40" />
-                    </div>
-                  </Col>
-                </Row>
-                <Row className="mt-3">
-                  <Col>
-                    <p className="mb-0 text-sm text-light">
-                      Mês Anterior:{" "}
-                      <strong>
-                        {totalVendasMesAnterior.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                      </strong>
-                    </p>
-                  </Col>
-                </Row>
-                <Row className="mt-1">
-                  <Col>
-                    <p className="mb-0 text-sm">
-                      <span className={variacaoPercentual >= 0 ? "text-white mr-2" : "text-danger mr-2"}>
-                        {variacaoPercentual >= 0 ? (
-                          <i className="fa fa-arrow-up" />
-                        ) : (
-                          <i className="fa fa-arrow-down" />
-                        )}{" "}
-                        {Math.abs(variacaoPercentual).toFixed(2)}%
-                      </span>
-                      <span className="text-nowrap text-light">
-                        de variação em relação ao mês anterior
-                      </span>
-                    </p>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-
-          <Col md="6" xl="3">
-            <Card className="bg-gradient-default">
-              <CardBody>
-                <Row>
-                  <div className="col">
-                    <CardTitle className="text-uppercase text-muted mb-0 text-white">
-                      Quantidade Vendida
-                    </CardTitle>
-                    <span className="h2 font-weight-bold mb-0 text-white">
-                      {totalVendasCountMesAtual}
-                    </span>
-                  </div>
-                  <Col className="col-auto">
-                    <div className="icon icon-shape bg-white text-dark rounded-circle shadow">
-                      <i className="ni ni-basket" />
-                    </div>
-                  </Col>
-                </Row>
-                <Row className="mt-3">
-                  <Col>
-                    <p className="mb-0 text-sm text-light">
-                      Mês Anterior: <strong>{totalVendasCountMesAnterior}</strong>
-                    </p>
-                  </Col>
-                </Row>
-                <Row className="mt-1">
-                  <Col>
-                    <p className="mb-0 text-sm">
-                      <span className={variacaoPercentualCount >= 0 ? "text-white mr-2" : "text-danger mr-2"}>
-                        {variacaoPercentualCount >= 0 ? (
-                          <i className="fa fa-arrow-up" />
-                        ) : (
-                          <i className="fa fa-arrow-down" />
-                        )}{" "}
-                        {Math.abs(variacaoPercentualCount).toFixed(2)}%
-                      </span>
-                      <span className="text-nowrap text-light">
-                        de variação em relação ao mês anterior
-                      </span>
-                    </p>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-
-
-          <Col md="6" xl="3">
-            <Card className="bg-gradient-default">
-              <CardBody>
-                <Row>
-                  <div className="col">
-                    <CardTitle className="text-uppercase text-muted mb-0 text-white">
-                      Ticket Médio
-                    </CardTitle>
-                    <span className="h2 font-weight-bold mb-0 text-white">
-                      {ticketMesAtual.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                    </span>
-                  </div>
-                  <Col className="col-auto">
-                    <div className="icon icon-shape bg-white text-dark rounded-circle shadow">
-                      <i className="ni ni-money-coins" />
-                    </div>
-                  </Col>
-                </Row>
-                <Row className="mt-3">
-                  <Col>
-                    <p className="mb-0 text-sm text-light">
-                      Mês Anterior:{" "}
-                      <strong>
-                        {ticketMesAnterior.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                      </strong>
-                    </p>
-                  </Col>
-                </Row>
-                <Row className="mt-1">
-                  <Col>
-                    <p className="mb-0 text-sm">
-                      <span className={variacaoTicket >= 0 ? "text-white mr-2" : "text-danger mr-2"}>
-                        {variacaoTicket >= 0 ? (
-                          <i className="fa fa-arrow-up" />
-                        ) : (
-                          <i className="fa fa-arrow-down" />
-                        )}{" "}
-                        {Math.abs(variacaoTicket).toFixed(2)}%
-                      </span>
-                      <span className="text-nowrap text-light">
-                        de variação em relação ao mês anterior
-                      </span>
-                    </p>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-
-
-          <Col md="6" xl="3">
-            <Card className="bg-gradient-warning">
-              <CardBody>
-                <Row>
-                  <div className="col">
-                    <CardTitle className="text-uppercase text-muted mb-0 text-white">
-                      Meta de Vendas Restante
-                    </CardTitle>
-                    <span className="h2 font-weight-bold mb-0 text-white">
-                      {diferenca > 0
-                        ? diferenca.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-                        : "Meta Atingida"}
-                    </span>
-                  </div>
-                  <Col className="col-auto">
-                    <div className="icon icon-shape bg-white text-dark rounded-circle shadow">
-                      <i className="ni ni-spaceship" />
-                    </div>
-                  </Col>
-                </Row>
-                {diferenca > 0 && (
-                  <Row className="mt-3">
-                    <Col>
-                      <p className="mb-0 text-sm text-light">
-                        Mês Anterior:{" "}
-                        <strong>
-                          {totalVendasMesAnterior.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                        </strong>
-                      </p>
-                      <p className="mt-1 mb-0 text-sm text-light">
-                        Faltam {metaDiaria.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} de vendas por dia.
-                      </p>
-                    </Col>
-                  </Row>
-                )}
-                {diferenca <= 0 && (
-                  <Row className="mt-3">
-                    <Col>
-                      <p className="mb-0 text-sm text-light">
-                        Parabéns, você já atingiu (ou superou) a meta do mês anterior!
-                      </p>
-                    </Col>
-                  </Row>
-                )}
+        <Row className="mb-4">
+          <Col xl="12">
+            <Card className="shadow" style={{ minHeight: "250px" }}>
+              <CardHeader style={{ padding: "0.5rem" }}>
+                <h3 className="mb-0">Índice de Esforço por Operadora</h3>
+              </CardHeader>
+              <CardBody style={{ height: "300px", padding: "0.5rem" }}>
+                <Bar
+                  data={effortChartData}
+                  options={{
+                    ...effortChartOptions,
+                    maintainAspectRatio: false, // IMPORTANTE para desabilitar a proporção fixa
+                  }}
+                />
               </CardBody>
             </Card>
           </Col>
         </Row>
+
+
+
+        <Row className="mb-4">
+          <Col xl="12">
+            <Card className="shadow">
+              <CardHeader>
+                <h3 className="mb-0">Vendas (Qtd. x Valor) - Últimos 12 Meses</h3>
+              </CardHeader>
+              <CardBody style={{ height: '400px' }}>
+                <Line data={line12ChartData} options={line12ChartOptions} />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+
 
 
       </Container>
@@ -899,4 +761,4 @@ const IndicadoresV2 = () => {
   );
 };
 
-export default IndicadoresV2;
+export default Indicadores;
